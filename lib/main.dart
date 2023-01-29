@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:meilisearch/meilisearch.dart';
 
-void main() {
+var client = MeiliSearchClient(
+  'localhost:7700',
+  'MASTER_KEY',
+);
+
+void main() async {
   runApp(const MyApp());
 }
 
@@ -48,68 +54,75 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  void _incrementCounter() async {
+// An index where books are stored.
+    await client.createIndex('books');
+    var index = await client.getIndex('books');
+    var documents = [
+      {'book_id': 123, 'title': 'Pride and Prejudice'},
+      {'book_id': 456, 'title': 'Le Petit Prince'},
+      {'book_id': 1, 'title': 'Alice In Wonderland'},
+      {'book_id': 1344, 'title': 'The Hobbit'},
+      {'book_id': 4, 'title': 'Harry Potter and the Half-Blood Prince'},
+      {'book_id': 42, 'title': 'The Hitchhiker\'s Guide to the Galaxy'},
+      {'book_id': 1000, 'title': 'The Lord of the Rings'},
+      {'book_id': 2, 'title': 'The Chronicles of Narnia'},
+      {'book_id': 1984, 'title': '1984'},
+      {'book_id': 10, 'title': 'Jane Eyre'},
+      {'book_id': 16, 'title': 'Wuthering Heights'},
+      {'book_id': 3, 'title': 'The Great Gatsby'},
+      {'book_id': 100, 'title': 'The Time Machine'},
+      {'book_id': 125, 'title': 'A Wrinkle in Time'},
+      {'book_id': 1337, 'title': 'The Hunger Games'},
+      {'book_id': 1338, 'title': 'T h e H u n g e r G a m e s'},
+    ];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+// Add documents into index we just created.
+    await index.addDocuments(documents);
+
+// Search
+    var result = await index.search('prience');
+    print(result.hits);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter',
+              'Create Key',
               style: Theme.of(context).textTheme.headline4,
+            ),
+            TextButton(
+              onPressed: () async {
+                // var key = await client.createKey(
+                //   description: 'Key for adding books and testing search',
+                //   actions: ["*"],
+                //   indexes: ["*"],
+                //   expiresAt: DateTime(2042, 04, 02),
+                //   uid: "my-key-uid-book",
+                // );
+                // print(key.toString());
+              },
+              child: const Text('Create Key'),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        tooltip: 'Index Books',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
